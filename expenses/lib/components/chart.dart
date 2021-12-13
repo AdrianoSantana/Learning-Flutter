@@ -54,8 +54,9 @@ class Chart extends StatelessWidget {
                 weekDay: transactionPorData['day'].toString(),
                 totalValueDay:
                     double.parse(transactionPorData['value'].toString()),
-                percentage:
-                    (transactionPorData['value'] as double) / _weekTotalValue,
+                percentage: _weekTotalValue == 0
+                    ? 0
+                    : (transactionPorData['value'] as double) / _weekTotalValue,
               ),
             );
           }).toList(),

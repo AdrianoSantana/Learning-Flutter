@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class TransactionForm extends StatefulWidget {
-  final void Function(String, double) onSubmit;
+  final void Function(String, double, DateTime) onSubmit;
   const TransactionForm(this.onSubmit, {Key? key}) : super(key: key);
 
   @override
@@ -9,15 +10,16 @@ class TransactionForm extends StatefulWidget {
 }
 
 class _TransactionFormState extends State<TransactionForm> {
-  final titleController = TextEditingController();
-  final valueController = TextEditingController();
+  final _titleController = TextEditingController();
+  final _valueController = TextEditingController();
+  var _selectedDate = DateTime.now();
 
   void _submitForm() {
-    final title = titleController.text;
-    final value = double.tryParse(valueController.text) ?? 0.0;
+    final title = _titleController.text;
+    final value = double.tryParse(_valueController.text) ?? 0.0;
 
     if (title.isEmpty || value <= 0) return;
-    widget.onSubmit(title, value);
+    widget.onSubmit(title, value, _selectedDate);
   }
 
   void _showDatePicker() {
@@ -26,7 +28,14 @@ class _TransactionFormState extends State<TransactionForm> {
       initialDate: DateTime.now(),
       firstDate: DateTime(2019),
       lastDate: DateTime.now(),
-    );
+    ).then((choosedDate) {
+      if (choosedDate == null) {
+        return;
+      }
+      setState(() {
+        _selectedDate = choosedDate;
+      });
+    });
   }
 
   @override
@@ -39,21 +48,27 @@ class _TransactionFormState extends State<TransactionForm> {
           children: [
             TextField(
               onSubmitted: (valueField) => _submitForm,
-              controller: titleController,
+              controller: _titleController,
               decoration: const InputDecoration(labelText: 'Título'),
             ),
             TextField(
               keyboardType:
                   const TextInputType.numberWithOptions(decimal: true),
               onSubmitted: (valueField) => _submitForm,
-              controller: valueController,
+              controller: _valueController,
               decoration: const InputDecoration(labelText: 'Valor R\$'),
             ),
             Container(
               height: 70,
               child: Row(
                 children: [
-                  const Text("Nenhuma data selecionada"),
+                  Expanded(
+                    child: Text(
+                      _selectedDate == null
+                          ? "Nenhuma data selecionada"
+                          : "Data Selecionada: ${DateFormat('dd/MM/y').format(_selectedDate)}",
+                    ),
+                  ),
                   TextButton(
                     onPressed: _showDatePicker,
                     child: const Text(
